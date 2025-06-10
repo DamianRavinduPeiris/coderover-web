@@ -1,13 +1,11 @@
-import LandingPage from "./LandingPage"
+import LandingPage from "./LandingPage";
 
 function App() {
-
-
   return (
     <>
       <LandingPage />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
