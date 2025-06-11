@@ -1,9 +1,9 @@
-import LandingPage from "./LandingPage";
+import RouteConfiguration from "./config/RouteConfiguration";
 
 function App() {
   return (
     <>
-      <LandingPage />
+      <RouteConfiguration />
     </>
   );
 }
