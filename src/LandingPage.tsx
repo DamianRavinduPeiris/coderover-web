@@ -1,6 +1,19 @@
 import { Github, Code, Search, CheckCircle } from "lucide-react";
 import AOS from 'aos';
 
+function GithubLoginButton({ redirectUrl }: { redirectUrl: string }) {
+    return (
+        <div className="flex justify-center">
+            <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                onClick={() => {
+                    window.location.href = redirectUrl;
+                }}>
+                <Github className="h-5 w-5" />
+                Continue with GitHub
+            </button>
+        </div>
+    );
+}
 
 export default function LandingPage() {
     AOS.init();
@@ -8,36 +21,26 @@ export default function LandingPage() {
 
     return (
         <div data-aos="fade-left" className="min-h-screen bg-white text-black">
-            <header className="border-b border-gray-200">
-                <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Code className="h-6 w-6" />
-                        <span className="text-xl font-bold">CodeRover</span>
-                    </div>
+            <header className="border-b border-gray-200 bg-white sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
+                    <span className="text-2xl font-semibold tracking-tight text-black">CodeRover</span>
                 </div>
             </header>
-
             <main>
-                <section className="max-w-6xl mx-auto px-6 py-20" >
+                <section className="max-w-4xl mx-auto px-6 py-20" >
                     <div className="text-center max-w-3xl mx-auto">
-                        <h1 className="text-5xl font-bold mb-6">AI-Driven Code Reviews</h1>
+                        <h2 className="text-6xl font-bold mb-6">
+                            CodeRover - Your AI Code Review Companion
+                        </h2>
                         <p className="text-xl text-gray-600 mb-8">
                             Instantly catch bugs, security issues, and code smells as you
                             commit. Connect to GitHub for real-time, actionable feedback.
                         </p>
-                        <div className="flex justify-center">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-                                onClick={() => {
-                                    window.location.href = REDIRECT__URL;
-                                }}>
-                                <Github className="h-5 w-5" />
-                                Continue with GitHub
-                            </button>
-                        </div>
+                        <GithubLoginButton redirectUrl={REDIRECT__URL} />
                     </div>
                 </section>
 
-                <section className="bg-gray-50 py-20"  data-aos="flip-up">
+                <section className="bg-gray-50 py-20" data-aos="flip-up">
                     <div data-aos="fade-right" className="max-w-6xl mx-auto px-6">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl font-bold mb-4">How It Works</h2>
@@ -85,7 +88,7 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section  data-aos="flip-up" className="py-20">
+                <section data-aos="flip-up" className="py-20">
                     <div className="max-w-6xl mx-auto px-6 text-center">
                         <h2 className="text-3xl font-bold mb-4">
                             Ready to improve your code?
@@ -93,6 +96,7 @@ export default function LandingPage() {
                         <p className="text-xl text-gray-600 mb-8">
                             Join developers who are shipping better code with CodeRover
                         </p>
+                        <GithubLoginButton redirectUrl={REDIRECT__URL} />
                     </div>
                 </section>
             </main>
