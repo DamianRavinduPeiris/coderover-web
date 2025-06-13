@@ -1,13 +1,12 @@
 import { Github, Code, Search, CheckCircle } from "lucide-react";
+import { useEffect, useMemo, type ReactElement } from "react";
 import AOS from 'aos';
 
 function GithubLoginButton({ redirectUrl }: { redirectUrl: string }) {
     return (
         <div className="flex justify-center">
             <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-                onClick={() => {
-                    window.location.href = redirectUrl;
-                }}>
+                onClick={() => { window.location.href = redirectUrl; }}>
                 <Github className="h-5 w-5" />
                 Continue with GitHub
             </button>
@@ -15,9 +14,21 @@ function GithubLoginButton({ redirectUrl }: { redirectUrl: string }) {
     );
 }
 
+function FeatureCard({ icon, title, description }: { icon: ReactElement, title: string, description: string }) {
+    return (
+        <div className="text-center">
+            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                {icon}
+            </div>
+            <h3 className="text-xl font-bold mb-4">{title}</h3>
+            <p className="text-gray-600">{description}</p>
+        </div>
+    );
+}
+
 export default function LandingPage() {
-    AOS.init();
-    const REDIRECT__URL = import.meta.env.VITE_BASE_URL + "/oauth2/authorization/github";
+    useEffect(() => { AOS.init(); }, []);
+    const REDIRECT__URL = useMemo(() => import.meta.env.VITE_BASE_URL + "/oauth2/authorization/github", []);
 
     return (
         <div data-aos="fade-left" className="min-h-screen bg-white text-black">
@@ -50,40 +61,21 @@ export default function LandingPage() {
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-8">
-                            <div className="text-center">
-                                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <Github className="h-8 w-8 text-white" />
-                                </div>
-                                <h3 className="text-xl font-bold mb-4">
-                                    1. Connect Repository
-                                </h3>
-                                <p className="text-gray-600">
-                                    Login via Github OAuth and connect your repository to
-                                    CodeRover.
-                                </p>
-                            </div>
-
-                            <div className="text-center">
-                                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <Search className="h-8 w-8 text-white" />
-                                </div>
-                                <h3 className="text-xl font-bold mb-4">2. AI Analyzes Code</h3>
-                                <p className="text-gray-600">
-                                    Our AI engine scans your codebase for bugs, security
-                                    vulnerabilities, and best practices.
-                                </p>
-                            </div>
-
-                            <div className="text-center" >
-                                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <CheckCircle className="h-8 w-8 text-white" />
-                                </div>
-                                <h3 className="text-xl font-bold mb-4">3. Get Insights</h3>
-                                <p className="text-gray-600">
-                                    Receive detailed reports with actionable suggestions to
-                                    improve your code quality.
-                                </p>
-                            </div>
+                            <FeatureCard
+                                icon={<Github className="h-8 w-8 text-white" />}
+                                title="1. Connect Repository"
+                                description="Login via Github OAuth and connect your repository to CodeRover."
+                            />
+                            <FeatureCard
+                                icon={<Search className="h-8 w-8 text-white" />}
+                                title="2. AI Analyzes Code"
+                                description="Our AI engine scans your codebase for bugs, security vulnerabilities, and best practices."
+                            />
+                            <FeatureCard
+                                icon={<CheckCircle className="h-8 w-8 text-white" />}
+                                title="3. Get Insights"
+                                description="Receive detailed reports with actionable suggestions to improve your code quality."
+                            />
                         </div>
                     </div>
                 </section>

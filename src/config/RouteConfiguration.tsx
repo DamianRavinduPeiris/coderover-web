@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import LandingPage from "../LandingPage";
+import LandingPage from "../main/LandingPage";
 import DashBoard from "../dashboard/DashBoard";
 export default function RouteConfiguration() {
     return (

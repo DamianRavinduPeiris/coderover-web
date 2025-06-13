@@ -1,6 +1,7 @@
 import axios from "axios";
 import type RepoType from "../types/RepoType";
 
+// Fetch repositories from the given URL
 export async function fetchRepos(url: string): Promise<RepoType[]> {
   const response = await axios.get(url, { withCredentials: true });
   if (response.status === 200) {
@@ -9,17 +10,19 @@ export async function fetchRepos(url: string): Promise<RepoType[]> {
   throw new Error("Failed to fetch repositories!");
 }
 
+// Move the repo matching the query to the top of the list
 export function searchAndMoveRepo(repos: RepoType[], query: string): RepoType[] | null {
-  const q = query.trim().toLowerCase();
-  const idx = repos.findIndex(repo => repo.name.toLowerCase() === q);
-  if (idx !== -1) {
-    const matched = repos[idx];
-    return [matched, ...repos.filter((_, i) => i !== idx)];
+  const name = query.trim().toLowerCase();
+  const found = repos.find(repo => repo.name.toLowerCase() === name);
+  if (found) {
+    return [found, ...repos.filter(r => r !== found)];
   }
   return null;
 }
 
+// Get suggestions for repos matching the query
 export function getSuggestions(repos: RepoType[], query: string): RepoType[] {
-  if (!query.trim()) return [];
-  return repos.filter(repo => repo.name.toLowerCase().includes(query.trim().toLowerCase()));
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return repos.filter(repo => repo.name.toLowerCase().includes(q));
 }
