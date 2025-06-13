@@ -1,12 +1,13 @@
 import { Github, Code, Search, CheckCircle } from "lucide-react";
-import axios from "axios";
+import AOS from 'aos';
 
 
 export default function LandingPage() {
+    AOS.init();
     const REDIRECT__URL = import.meta.env.VITE_BASE_URL + "/oauth2/authorization/github";
 
     return (
-        <div className="min-h-screen bg-white text-black">
+        <div data-aos="fade-left" className="min-h-screen bg-white text-black">
             <header className="border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -17,7 +18,7 @@ export default function LandingPage() {
             </header>
 
             <main>
-                <section className="max-w-6xl mx-auto px-6 py-20">
+                <section className="max-w-6xl mx-auto px-6 py-20" >
                     <div className="text-center max-w-3xl mx-auto">
                         <h1 className="text-5xl font-bold mb-6">AI-Driven Code Reviews</h1>
                         <p className="text-xl text-gray-600 mb-8">
@@ -36,8 +37,8 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section className="bg-gray-50 py-20">
-                    <div className="max-w-6xl mx-auto px-6">
+                <section className="bg-gray-50 py-20"  data-aos="flip-up">
+                    <div data-aos="fade-right" className="max-w-6xl mx-auto px-6">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl font-bold mb-4">How It Works</h2>
                             <p className="text-xl text-gray-600">
@@ -70,7 +71,7 @@ export default function LandingPage() {
                                 </p>
                             </div>
 
-                            <div className="text-center">
+                            <div className="text-center" >
                                 <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
                                     <CheckCircle className="h-8 w-8 text-white" />
                                 </div>
@@ -84,7 +85,7 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section className="py-20">
+                <section  data-aos="flip-up" className="py-20">
                     <div className="max-w-6xl mx-auto px-6 text-center">
                         <h2 className="text-3xl font-bold mb-4">
                             Ready to improve your code?
