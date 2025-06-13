@@ -6,7 +6,7 @@ import AOS from 'aos';
 
 
 export default function DashBoard() {
-      AOS.init();
+    AOS.init();
     const [repos, setRepos] = useState<RepoType[]>([]);
     useEffect(() => {
         const URL = import.meta.env.VITE_BASE_URL + "/api/v1/github/user/repos";
@@ -84,7 +84,7 @@ export default function DashBoard() {
                 <div className="grid gap-4">
                     {repos.map((repo) => (
                         <a key={repo.full_name} href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                            <div  data-aos="flip-up" className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors cursor-pointer">
+                            <div data-aos="flip-up" className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors cursor-pointer">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
