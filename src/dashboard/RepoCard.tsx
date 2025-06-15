@@ -1,9 +1,27 @@
 import { Github } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type RepoType from "../types/RepoType";
 
-export default function RepoCard({ repo, onClick }: { repo: RepoType, onClick?: () => void }) {
+export default function RepoCard({ repo }: { repo: RepoType }) {
+    const navigate = useNavigate();
+    const handleCardClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const [owner, repoName] = repo.full_name.split('/');
+        navigate(`/repos/${owner}/${repoName}/tree`, {
+            state: {
+                repoMeta: {
+                    name: repo.name,
+                    updated_at: repo.updated_at,
+                    stargazers_count: repo.stargazers_count,
+                    private: repo.private,
+                    language: repo.language,
+                    description: repo.description,
+                }
+            }
+        });
+    };
     return (
-        <a key={repo.full_name} href={repo.html_url} target="_blank" rel="noopener noreferrer" onClick={onClick}>
+        <a key={repo.full_name} href="#" onClick={handleCardClick}>
             <div data-aos="flip-up" className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors cursor-pointer">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">

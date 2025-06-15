@@ -7,6 +7,8 @@ import { showError, showSuccess } from "../util/ui";
 import { fetchRepos, getSuggestions, searchAndMoveRepo } from "../util/repo";
 import RepoCard from "./RepoCard";
 import { useCombobox } from 'downshift';
+import AppHeader from "../components/AppHeader";
+import AppFooter from "../components/AppFooter";
 
 export default function DashBoard() {
   useEffect(() => { AOS.init(); }, []);
@@ -18,7 +20,11 @@ export default function DashBoard() {
     setLoading(true);
     fetchRepos(URL)
       .then(data => setRepos(data))
-      .catch(() => showError("Error fetching repositories"))
+      .catch(() => {
+        showError("Error fetching repositories")
+        window.location.href = "/";
+
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -54,14 +60,10 @@ export default function DashBoard() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Toaster position="top-right" />
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
-          <span className="text-2xl font-semibold tracking-tight text-black">CodeRover</span>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <AppHeader />
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold">Your Repositories</h1>
@@ -111,17 +113,7 @@ export default function DashBoard() {
           )}
         </div>
       </main>
-      <footer className="border-t border-gray-200 py-8 bg-white/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Code className="h-5 w-5" />
-            <span className="font-semibold">CodeRover</span>
-          </div>
-          <p className="text-sm text-gray-600">
-            © 2025 CodeRover. Crafted With 💖 by Damian.
-          </p>
-        </div>
-      </footer>
+      <AppFooter />
     </div>
   );
 }
