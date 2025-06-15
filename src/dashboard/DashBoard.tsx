@@ -9,11 +9,13 @@ import RepoCard from "./RepoCard";
 import { useCombobox } from 'downshift';
 import AppHeader from "../components/AppHeader";
 import AppFooter from "../components/AppFooter";
+import { fetchUserInfo } from "../util/fetchUserInfo";
 
 export default function DashBoard() {
   useEffect(() => { AOS.init(); }, []);
   const [repos, setRepos] = useState<RepoType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ name: string; profilePic: string } | null>(null);
 
   const fetchAllRepos = useCallback(() => {
     const URL = import.meta.env.VITE_BASE_URL + "/api/v1/github/user/repos";
@@ -29,6 +31,12 @@ export default function DashBoard() {
   }, []);
 
   useEffect(() => { fetchAllRepos(); }, [fetchAllRepos]);
+
+  useEffect(() => {
+    fetchUserInfo()
+      .then(({ name, profilePic }) => setUser({ name, profilePic }))
+      .catch(() => setUser(null));
+  }, []);
 
   const [inputValue, setInputValue] = useState("");
   const suggestions = getSuggestions(repos, inputValue);
@@ -62,7 +70,7 @@ export default function DashBoard() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Toaster position="top-right" />
-      <AppHeader />
+      <AppHeader user={user || undefined} />
       <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
         <div className="flex items-center justify-between mb-8">
           <div>

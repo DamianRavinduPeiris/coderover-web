@@ -114,9 +114,4 @@ const FileViewer: React.FC = () => {
     </div>
   );
 };
-
-// Add fade-in and fade-in-up animations via Tailwind or global CSS if not present
-// .animate-fade-in { animation: fadeIn 0.5s ease; }
-// .animate-fade-in-up { animation: fadeInUp 0.5s ease; }
-
 export default FileViewer;

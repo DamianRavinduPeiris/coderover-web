@@ -6,10 +6,12 @@ const BASE_URL = import.meta.env.VITE_BASE_URL + "/api/v1/github";
 
 export async function fetchRepoTree(
   owner: string,
-  repo: string
+  repo: string,
+  branch?: string
 ): Promise<RepoTreeResponse | null> {
   try {
     const res = await axios.get(`${BASE_URL}/repos/${owner}/${repo}/tree`, {
+      params: branch ? { branch } : {},
       withCredentials: true,
     });
     return res.data;

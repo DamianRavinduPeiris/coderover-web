@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { fetchRepoTree } from '../util/FetchRepoTrees';
 import type { RepoTreeNode } from '../types/RepoTree';
 import TreeNode from './TreeNode';
-import {Star } from "lucide-react";
+import { Star } from 'lucide-react';
 import AOS from 'aos';
 import { useEffect as useAosEffect } from 'react';
-import AppHeader from "./AppHeader";
-import AppFooter from "./AppFooter";
+import AppHeader from './AppHeader';
+import AppFooter from './AppFooter';
 import { useNavigate, useLocation } from 'react-router-dom';
+import BranchDropdown from './BranchDropdown';
 
 interface RepoTreeProps {
   owner: string;
@@ -26,26 +27,31 @@ const RepoTree: React.FC<RepoTreeProps> = ({ owner, repo, repoMeta }) => {
   const [tree, setTree] = useState<RepoTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string>('master');
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
+  const fetchTree = async (branch: string) => {
     setLoading(true);
-    fetchRepoTree(owner, repo)
-      .then((res) => {
-        if (res && res.data && res.data.tree) {
-          setTree(res.data.tree);
-        } else {
-          setError('Failed to load repo tree');
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch repo tree:', err);
+    setError(null);
+    try {
+      const res = await fetchRepoTree(owner, repo, branch);
+      if (res && res.data && res.data.tree) {
+        setTree(res.data.tree);
+      } else {
         setError('Failed to load repo tree');
-        setLoading(false);
-      });
-  }, [owner, repo]);
+      }
+    } catch (err) {
+      setError('Failed to load repo tree');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTree(selectedBranch);
+    // eslint-disable-next-line
+  }, [owner, repo, selectedBranch]);
 
   // Use repoMeta from location.state if not provided as prop
   const meta = repoMeta || location.state?.repoMeta;
@@ -58,6 +64,7 @@ const RepoTree: React.FC<RepoTreeProps> = ({ owner, repo, repoMeta }) => {
       <p className="text-gray-600 text-sm">Fetching repository structure...</p>
     </div>
   );
+
   if (error) return <div className="text-red-500">{error}</div>;
 
   // Only show top-level nodes
@@ -84,9 +91,15 @@ const RepoTree: React.FC<RepoTreeProps> = ({ owner, repo, repoMeta }) => {
           </button>
         </div>
         <div className="mb-6 flex flex-col gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <svg aria-label="Directory" viewBox="0 0 16 16" width="24" height="24" className="text-yellow-500"><path fill="currentColor" d="M1.75 2A1.75 1.75 0 0 0 0 3.75v8.5A1.75 1.75 0 0 0 1.75 14h12.5A1.75 1.75 0 0 0 16 12.25V5.5A1.5 1.5 0 0 0 14.5 4h-6.086a.5.5 0 0 1-.354-.146L6.207 2.854A1.5 1.5 0 0 0 5.146 2.5H1.75ZM1.5 3.75A.25.25 0 0 1 1.75 3.5h3.396a.5.5 0 0 1 .354.146l1.853 1.853A1.5 1.5 0 0 0 8.914 6H14.5a.5.5 0 0 1 .5.5v6.25a.25.25 0 0 1-.25.25H1.75a.25.25 0 0 1-.25-.25v-9.5Z"></path></svg>
             <h2 className="text-2xl font-bold tracking-tight" data-aos="fade-right">Repo Structure</h2>
+            <BranchDropdown
+              owner={owner}
+              repo={repo}
+              selectedBranch={selectedBranch}
+              onBranchChange={setSelectedBranch}
+            />
           </div>
           {meta && (
             <div className="flex flex-col md:items-end md:w-full gap-1 text-gray-700 text-sm bg-white rounded px-0 py-2 border-b border-gray-200 mb-2">
