@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { fetchBlob } from '../util/repoTreeApi';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { fetchBlob } from '../util/FetchRepoTrees';
+import AppHeader from './AppHeader';
+import AppFooter from './AppFooter';
+import { FileIcon } from 'lucide-react';
+import AOS from 'aos';
+import { useEffect as useAosEffect } from 'react';
 
 const decodeBase64 = (str: string) => {
   try {
@@ -11,34 +16,107 @@ const decodeBase64 = (str: string) => {
 };
 
 const FileViewer: React.FC = () => {
-  const { owner, repo, '*': path } = useParams();
+  const { owner, repo, '*': sha } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const fileName = location.state?.fileName as string | undefined;
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useAosEffect(() => { AOS.init(); }, []);
   useEffect(() => {
-    if (!owner || !repo || !path) return;
+    if (!owner || !repo || !sha) return;
     setLoading(true);
-    fetchBlob(owner, repo, path)
+    fetchBlob(owner, repo, sha)
       .then(res => {
-        setContent(decodeBase64(res.data.content));
+        if (res && res.data && res.data.content) {
+          setContent(decodeBase64(res.data.content));
+        } else {
+          setContent('');
+        }
         setLoading(false);
       })
       .catch(() => {
         setError('Failed to load file');
         setLoading(false);
       });
-  }, [owner, repo, path]);
+  }, [owner, repo, sha]);
 
-  if (loading) return <div className="animate-pulse">Loading file...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  // Detect if the file is a PNG image
+  const isPng = fileName && fileName.toLowerCase().endsWith('.png');
+  const isClassFile = fileName && fileName.toLowerCase().endsWith('.class');
 
-  // Simple code viewer, can be improved with syntax highlighting
+  if (loading) return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <AppHeader />
+      <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin mt-20" />
+        <p className="text-gray-600 text-sm">Loading file...</p>
+      </div>
+      <AppFooter />
+    </div>
+  );
+  if (error) return (
+    <div className="flex flex-col min-h-screen bg-white">
+      <AppHeader />
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+      <AppFooter />
+    </div>
+  );
+
+  // Modern, minimal, animated code viewer
   return (
-    <pre className="bg-gray-900 text-green-200 rounded p-4 overflow-x-auto text-sm">
-      {content}
-    </pre>
+    <div className="min-h-screen bg-white flex flex-col">
+      <AppHeader />
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-10 animate-fade-in">
+        <button
+          className="mb-6 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition flex items-center gap-2"
+          onClick={() => navigate(`/repos/${owner}/${repo}/tree`)}
+        >
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Back to Repo Tree
+        </button>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-6 border-b border-gray-200 pb-4">
+          <div className="flex items-center gap-2 text-lg font-semibold text-blue-900">
+            <FileIcon className="h-5 w-5 text-gray-500" />
+            <span>{repo}</span>
+            <span className="text-gray-400">/</span>
+            <span className="text-black font-mono text-base">{fileName || 'File'}</span>
+          </div>
+          <div className="text-xs text-gray-500 font-mono break-all">SHA: {sha}</div>
+        </div>
+        {isClassFile ? (
+          <div className="flex flex-col items-center justify-center bg-yellow-50 border border-yellow-200 rounded-lg p-8 animate-fade-in-up">
+            <span className="text-yellow-700 font-semibold text-lg mb-2">Cannot render .class files</span>
+            <span className="text-yellow-600 text-sm">Binary .class files cannot be displayed. Please view the source code instead.</span>
+          </div>
+        ) : isPng ? (
+          <div className="flex justify-center items-center bg-gray-100 rounded-lg border border-gray-200 p-6 animate-fade-in-up">
+            <img
+              src={`data:image/png;base64,${content}`}
+              alt={fileName}
+              className="max-w-full max-h-[600px] rounded shadow"
+              style={{ background: '#fff' }}
+            />
+          </div>
+        ) : (
+          <div className="rounded-lg bg-[#18181b] border border-gray-900/10 shadow-lg overflow-hidden animate-fade-in-up">
+            <pre className="text-sm leading-relaxed font-mono text-gray-100 p-6 overflow-x-auto whitespace-pre-wrap min-h-[300px]">
+              {content}
+            </pre>
+          </div>
+        )}
+      </main>
+      <AppFooter />
+    </div>
   );
 };
+
+// Add fade-in and fade-in-up animations via Tailwind or global CSS if not present
+// .animate-fade-in { animation: fadeIn 0.5s ease; }
+// .animate-fade-in-up { animation: fadeInUp 0.5s ease; }
 
 export default FileViewer;

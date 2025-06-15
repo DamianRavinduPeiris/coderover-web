@@ -1,13 +1,20 @@
 import axios from "axios";
 import type RepoType from "../types/RepoType";
+import { showError } from './AlertUtil';
 
 // Fetch repositories from the given URL
 export async function fetchRepos(url: string): Promise<RepoType[]> {
-  const response = await axios.get(url, { withCredentials: true });
-  if (response.status === 200) {
-    return response.data.data;
+  try {
+    const response = await axios.get(url, { withCredentials: true });
+    if (response.status === 200) {
+      return response.data.data;
+    }
+    throw new Error("Failed to fetch repositories!");
+  } catch (error) {
+    console.error(error);
+    showError("Failed to fetch repositories!");
+    return [];
   }
-  throw new Error("Failed to fetch repositories!");
 }
 
 // Move the repo matching the query to the top of the list

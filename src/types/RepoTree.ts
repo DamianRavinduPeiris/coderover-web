@@ -1,4 +1,3 @@
-// Types for repo tree and blob
 export interface RepoTreeNode {
   path: string;
   type: 'blob' | 'tree';

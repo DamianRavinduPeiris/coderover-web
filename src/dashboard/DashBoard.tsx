@@ -1,10 +1,10 @@
-import { RefreshCw, Code } from "lucide-react";
+import { RefreshCw} from "lucide-react";
 import type RepoType from "../types/RepoType";
 import { useEffect, useState, useCallback } from "react";
 import AOS from 'aos';
 import { Toaster } from "react-hot-toast";
-import { showError, showSuccess } from "../util/ui";
-import { fetchRepos, getSuggestions, searchAndMoveRepo } from "../util/repo";
+import { showError, showSuccess } from "../util/AlertUtil";
+import { fetchRepos, getSuggestions, searchAndMoveRepo } from "../util/FetchRepos";
 import RepoCard from "./RepoCard";
 import { useCombobox } from 'downshift';
 import AppHeader from "../components/AppHeader";

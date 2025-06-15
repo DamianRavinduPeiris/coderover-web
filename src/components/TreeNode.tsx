@@ -24,7 +24,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, fullTree, owner, repo, level 
 
   const handleClick = () => {
     if (node.type === 'tree') setExpanded(e => !e);
-    else navigate(`/repos/${owner}/${repo}/blob/${encodeURIComponent(node.path)}`);
+    else navigate(`/repos/${owner}/${repo}/blob/${node.sha}`, { state: { fileName: node.path.split('/').pop(), repoMeta: { name: repo, /* fallback minimal meta */ } } });
   };
 
   const children = node.type === 'tree' && expanded ? getChildren(node, fullTree) : [];
