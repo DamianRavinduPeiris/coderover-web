@@ -1,9 +1,33 @@
 @import "tailwindcss";
 
 html, body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
   overflow-x: hidden;
   overflow-y: auto;
   width: 100vw;
   max-width: 100vw;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #e0e7ff;
+}
+::-webkit-scrollbar-thumb {
+  background: #a5b4fc;
+  border-radius: 4px;
+}
+
+body {
+  color: #111;
+}
+
+.text-black { color: #111 !important; }
+.text-white { color: #fff !important; }
+.text-indigo-700, .text-indigo-800, .text-indigo-900, .text-indigo-500, .text-blue-900, .text-blue-700, .text-blue-500, .text-blue-600, .text-blue-800, .hover\:text-indigo-500, .hover\:text-blue-700, .hover\:text-blue-500, .hover\:text-blue-800, .hover\:text-blue-600 {
+  color: #111 !important;
+}
+.hover\:text-white:hover {
+  color: #fff !important;
 }

@@ -80,21 +80,21 @@ const FileViewer: React.FC = () => {
           Back to Repo Tree
         </button>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-6 border-b border-gray-200 pb-4">
-          <div className="flex items-center gap-2 text-lg font-semibold text-blue-900">
-            <FileIcon className="h-5 w-5 text-gray-500" />
+          <div className="flex items-center gap-2 text-lg font-semibold text-black">
+            <FileIcon className="h-5 w-5 text-black" />
             <span>{repo}</span>
             <span className="text-gray-400">/</span>
             <span className="text-black font-mono text-base">{fileName || 'File'}</span>
           </div>
-          <div className="text-xs text-gray-500 font-mono break-all">SHA: {sha}</div>
+          <div className="text-xs text-black/60 font-mono break-all">SHA: {sha}</div>
         </div>
         {isClassFile ? (
-          <div className="flex flex-col items-center justify-center bg-yellow-50 border border-yellow-200 rounded-lg p-8 animate-fade-in-up">
-            <span className="text-yellow-700 font-semibold text-lg mb-2">Cannot render .class files</span>
-            <span className="text-yellow-600 text-sm">Binary .class files cannot be displayed. Please view the source code instead.</span>
+          <div className="flex flex-col items-center justify-center bg-black border border-gray-200 rounded-lg p-8 animate-fade-in-up">
+            <span className="text-white font-semibold text-lg mb-2">Cannot render .class files</span>
+            <span className="text-white/80 text-sm">Binary .class files cannot be displayed. Please view the source code instead.</span>
           </div>
         ) : isPng ? (
-          <div className="flex justify-center items-center bg-gray-100 rounded-lg border border-gray-200 p-6 animate-fade-in-up">
+          <div className="flex justify-center items-center bg-black rounded-lg border border-gray-200 p-6 animate-fade-in-up">
             <img
               src={`data:image/png;base64,${content}`}
               alt={fileName}
@@ -103,8 +103,14 @@ const FileViewer: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="rounded-lg bg-[#18181b] border border-gray-900/10 shadow-lg overflow-hidden animate-fade-in-up">
-            <pre className="text-sm leading-relaxed font-mono text-gray-100 p-6 overflow-x-auto whitespace-pre-wrap min-h-[300px]">
+          <div className="vs-code-mockup rounded-lg border border-gray-900/10 shadow-lg overflow-hidden animate-fade-in-up bg-[#1e1e1e]">
+            <div className="flex items-center gap-2 px-4 py-2 bg-[#23272e] border-b border-[#222]">
+              <span className="w-3 h-3 rounded-full bg-[#ff5f56] inline-block"></span>
+              <span className="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block"></span>
+              <span className="w-3 h-3 rounded-full bg-[#27c93f] inline-block"></span>
+              <span className="ml-4 text-xs text-white/60 font-mono">{fileName}</span>
+            </div>
+            <pre className="text-sm leading-relaxed font-mono text-white p-6 overflow-x-auto whitespace-pre min-h-[300px] bg-[#1e1e1e]">
               {content}
             </pre>
           </div>
