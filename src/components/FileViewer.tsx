@@ -6,12 +6,41 @@ import AppFooter from './AppFooter';
 import { FileIcon } from 'lucide-react';
 import AOS from 'aos';
 import { useEffect as useAosEffect } from 'react';
+import CodeBlock from './CodeBlock';
 
 const decodeBase64 = (str: string) => {
   try {
     return decodeURIComponent(escape(window.atob(str)));
   } catch {
     return atob(str);
+  }
+};
+
+const detectLanguage = (fileName?: string): string => {
+  if (!fileName) return 'text';
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'js': return 'javascript';
+    case 'ts': return 'typescript';
+    case 'tsx': return 'tsx';
+    case 'jsx': return 'jsx';
+    case 'json': return 'json';
+    case 'css': return 'css';
+    case 'html': return 'html';
+    case 'md': return 'markdown';
+    case 'py': return 'python';
+    case 'java': return 'java';
+    case 'c': return 'c';
+    case 'cpp': return 'cpp';
+    case 'cs': return 'csharp';
+    case 'go': return 'go';
+    case 'rb': return 'ruby';
+    case 'php': return 'php';
+    case 'sh': return 'bash';
+    case 'xml': return 'xml';
+    case 'yml':
+    case 'yaml': return 'yaml';
+    default: return 'text';
   }
 };
 
@@ -46,6 +75,7 @@ const FileViewer: React.FC = () => {
   // Detect if the file is a PNG image
   const isPng = fileName && fileName.toLowerCase().endsWith('.png');
   const isClassFile = fileName && fileName.toLowerCase().endsWith('.class');
+  const language = detectLanguage(fileName);
 
   if (loading) return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -66,8 +96,15 @@ const FileViewer: React.FC = () => {
       <AppFooter />
     </div>
   );
-
-  // Modern, minimal, animated code viewer
+  if (!content) return (
+    <div className="flex flex-col min-h-screen bg-white">
+      <AppHeader />
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="text-gray-500">File content is empty or not available.</div>
+      </div>
+      <AppFooter />
+    </div>
+  );
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <AppHeader />
@@ -103,17 +140,7 @@ const FileViewer: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="vs-code-mockup rounded-lg border border-gray-900/10 shadow-lg overflow-hidden animate-fade-in-up bg-[#1e1e1e]">
-            <div className="flex items-center gap-2 px-4 py-2 bg-[#23272e] border-b border-[#222]">
-              <span className="w-3 h-3 rounded-full bg-[#ff5f56] inline-block"></span>
-              <span className="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block"></span>
-              <span className="w-3 h-3 rounded-full bg-[#27c93f] inline-block"></span>
-              <span className="ml-4 text-xs text-white/60 font-mono">{fileName}</span>
-            </div>
-            <pre className="text-sm leading-relaxed font-mono text-white p-6 overflow-x-auto whitespace-pre min-h-[300px] bg-[#1e1e1e]">
-              {content}
-            </pre>
-          </div>
+          <CodeBlock code={content} language={language} />
         )}
       </main>
       <AppFooter />
