@@ -13,21 +13,30 @@ import { fetchUserInfo } from "../util/fetchUserInfo";
 
 export default function DashBoard() {
   useEffect(() => { AOS.init(); }, []);
+  const [allRepos, setAllRepos] = useState<RepoType[]>([]);
   const [repos, setRepos] = useState<RepoType[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ name: string; profilePic: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const totalPages = Math.ceil(allRepos.length / pageSize);
 
-  const fetchAllRepos = useCallback(() => {
-    const URL = import.meta.env.VITE_BASE_URL + "/api/v1/github/user/repos";
+
+  const fetchAllRepos = useCallback(async () => {
     setLoading(true);
-    fetchRepos(URL)
-      .then(data => setRepos(data))
-      .catch(() => {
-        showError("Error fetching repositories")
-        window.location.href = "/";
-
-      })
-      .finally(() => setLoading(false));
+    let page = 1;
+    let fetchedRepos: RepoType[] = [];
+    while (true) {
+      const URL = `${import.meta.env.VITE_BASE_URL}/api/v1/github/user/repos?page=${page}&size=${pageSize}`;
+      const data = await fetchRepos(URL);
+      if (!data || data.length === 0) break;
+      fetchedRepos = [...fetchedRepos, ...data];
+      if (data.length < pageSize) break; // last page
+      page++;
+    }
+    setAllRepos(fetchedRepos);
+    setCurrentPage(1);
+    setLoading(false);
   }, []);
 
   useEffect(() => { fetchAllRepos(); }, [fetchAllRepos]);
@@ -37,6 +46,13 @@ export default function DashBoard() {
       .then(({ name, profilePic }) => setUser({ name, profilePic }))
       .catch(() => setUser(null));
   }, []);
+
+  useEffect(() => {
+    // Update repos for current page
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    setRepos(allRepos.slice(start, end));
+  }, [allRepos, currentPage]);
 
   const [inputValue, setInputValue] = useState("");
   const suggestions = getSuggestions(repos, inputValue);
@@ -120,6 +136,23 @@ export default function DashBoard() {
             ))
           )}
         </div>
+        {/* Pagination Controls */}
+        {!loading && totalPages > 1 && (
+          <div className="flex justify-center mt-8">
+            <nav className="inline-flex -space-x-px">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1 border border-gray-300 ${currentPage === page ? 'bg-black text-white' : 'bg-white text-black'} rounded mx-1`}
+                  disabled={currentPage === page}
+                >
+                  {page}
+                </button>
+              ))}
+            </nav>
+          </div>
+        )}
       </main>
       <AppFooter />
     </div>
