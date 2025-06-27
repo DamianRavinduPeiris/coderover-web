@@ -8,7 +8,7 @@ interface UserInfoProps {
 
 const UserInfo: React.FC<UserInfoProps> = ({ name, profilePic, className }) => {
   return (
-    <div className={`flex items-center gap-3 ${className || ''}`}>
+    <div className={`flex items-center gap-3 ${className ?? ''}`}>
       <span className="font-semibold text-base mr-2">{name}</span>
       <img
         src={profilePic}

@@ -5,12 +5,13 @@ import AppHeader from './AppHeader';
 import AppFooter from './AppFooter';
 import { FileIcon } from 'lucide-react';
 import AOS from 'aos';
-import { useEffect as useAosEffect } from 'react';
 import CodeBlock from './CodeBlock';
 
 const decodeBase64 = (str: string) => {
   try {
-    return decodeURIComponent(escape(window.atob(str)));
+    const binary = window.atob(str);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
   } catch {
     return atob(str);
   }
@@ -52,14 +53,15 @@ const FileViewer: React.FC = () => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
-  useAosEffect(() => { AOS.init(); }, []);
+  useEffect(() => { AOS.init(); }, []);
   useEffect(() => {
     if (!owner || !repo || !sha) return;
     setLoading(true);
     fetchBlob(owner, repo, sha)
       .then(res => {
-        if (res && res.data && res.data.content) {
+        if (res?.data?.content) {
           setContent(decodeBase64(res.data.content));
         } else {
           setContent('');
@@ -71,10 +73,10 @@ const FileViewer: React.FC = () => {
         setLoading(false);
       });
   }, [owner, repo, sha]);
-
   // Detect if the file is a PNG image
-  const isPng = fileName && fileName.toLowerCase().endsWith('.png');
-  const isClassFile = fileName && fileName.toLowerCase().endsWith('.class');
+  const isPng = fileName?.toLowerCase().endsWith('.png');
+  const isClassFile = fileName?.toLowerCase().endsWith('.class');
+  const isJavaFile = fileName?.toLowerCase().endsWith('.java');
   const language = detectLanguage(fileName);
 
   if (loading) return (
@@ -105,6 +107,31 @@ const FileViewer: React.FC = () => {
       <AppFooter />
     </div>
   );
+  let fileContent: React.ReactNode;
+  if (isClassFile) {
+    fileContent = (
+      <div className="flex flex-col items-center justify-center bg-black border border-gray-200 rounded-lg p-8 animate-fade-in-up">
+        <span className="text-white font-semibold text-lg mb-2">Cannot render .class files</span>
+        <span className="text-white/80 text-sm">Binary .class files cannot be displayed. Please view the source code instead.</span>
+      </div>
+    );
+  } else if (isPng) {
+    fileContent = (
+      <div className="flex justify-center items-center bg-black rounded-lg border border-gray-200 p-6 animate-fade-in-up">
+        <img
+          src={`data:image/png;base64,${content}`}
+          alt={fileName}
+          className="max-w-full max-h-[600px] rounded shadow"
+          style={{ background: '#fff' }}
+        />
+      </div>
+    );
+  } else if (!isJavaFile || !analyzing) {
+    fileContent = <CodeBlock code={content} language={language} />;
+  } else {
+    fileContent = null;
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <AppHeader />
@@ -121,27 +148,44 @@ const FileViewer: React.FC = () => {
             <FileIcon className="h-5 w-5 text-black" />
             <span>{repo}</span>
             <span className="text-gray-400">/</span>
-            <span className="text-black font-mono text-base">{fileName || 'File'}</span>
+            <span className="text-black font-mono text-base">{fileName ?? 'File'}</span>
           </div>
           <div className="text-xs text-black/60 font-mono break-all">SHA: {sha}</div>
         </div>
-        {isClassFile ? (
-          <div className="flex flex-col items-center justify-center bg-black border border-gray-200 rounded-lg p-8 animate-fade-in-up">
-            <span className="text-white font-semibold text-lg mb-2">Cannot render .class files</span>
-            <span className="text-white/80 text-sm">Binary .class files cannot be displayed. Please view the source code instead.</span>
+        {/* Analyze button for .java files */}
+        {isJavaFile && !analyzing && (
+          <div className="flex items-center gap-2 mb-4">
+            <button
+              className="px-4 py-1 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-full shadow hover:from-blue-600 hover:to-indigo-600 transition-all text-xs font-semibold border border-indigo-200 animate-pulse"
+              onClick={() => setAnalyzing(true)}
+            >
+              Analyze
+            </button>
           </div>
-        ) : isPng ? (
-          <div className="flex justify-center items-center bg-black rounded-lg border border-gray-200 p-6 animate-fade-in-up">
-            <img
-              src={`data:image/png;base64,${content}`}
-              alt={fileName}
-              className="max-w-full max-h-[600px] rounded shadow"
-              style={{ background: '#fff' }}
-            />
-          </div>
-        ) : (
-          <CodeBlock code={content} language={language} />
         )}
+        {/* Scanning animation overlay for .java files */}
+        {isJavaFile && analyzing && (
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md rounded z-10 animate-fade-in" style={{ minHeight: 200 }}>
+              <div className="flex flex-col items-center gap-4 w-full">
+                <div className="flex flex-row items-center justify-center mt-4 mb-2">
+                  <span className="bounce-dot"></span>
+                  <span className="bounce-dot"></span>
+                  <span className="bounce-dot"></span>
+                </div>
+                <span className="text-gray-700 font-bold text-base tracking-wide animate-pulse">Analyzing file...</span>
+              </div>
+            </div>
+            <div style={{ opacity: 0.3 }}>
+              <CodeBlock code={content} language={language} />
+            </div>
+            {/* End overlay */}
+            {/* Auto-hide animation after 2s */}
+            {analyzing && setTimeout(() => setAnalyzing(false), 2000) && null}
+          </div>
+        )}
+        {/* File content rendering */}
+        {fileContent}
       </main>
       <AppFooter />
     </div>

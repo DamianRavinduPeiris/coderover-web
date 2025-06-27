@@ -2,7 +2,7 @@ import { Github } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type RepoType from "../types/RepoType";
 
-export default function RepoCard({ repo }: { repo: RepoType }) {
+export default function RepoCard({ repo }: { readonly repo: RepoType }) {
     const navigate = useNavigate();
     const handleCardClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -21,7 +21,34 @@ export default function RepoCard({ repo }: { repo: RepoType }) {
         });
     };
     return (
-        <a key={repo.full_name} href="#" onClick={handleCardClick}>
+        <button
+            type="button"
+            onClick={handleCardClick}
+            onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    // Simulate click for keyboard
+                    handleCardClick({
+                        ...e,
+                        preventDefault: () => {},
+                        stopPropagation: () => {},
+                        nativeEvent: {} as Event,
+                        currentTarget: e.currentTarget,
+                        target: e.target,
+                        bubbles: false,
+                        cancelable: false,
+                        defaultPrevented: false,
+                        eventPhase: 0,
+                        isTrusted: true,
+                        timeStamp: Date.now(),
+                        type: 'click',
+                    } as unknown as React.MouseEvent);
+                }
+            }}
+            tabIndex={0}
+            className="w-full text-left"
+            style={{ background: 'none', border: 'none', padding: 0, margin: 0 }}
+        >
             <div data-aos="flip-up" className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors cursor-pointer">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -47,6 +74,6 @@ export default function RepoCard({ repo }: { repo: RepoType }) {
                     </div>
                 </div>
             </div>
-        </a>
+        </button>
     );
 }
