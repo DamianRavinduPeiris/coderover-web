@@ -99,12 +99,12 @@ export default function DashBoard() {
                 type="text"
                 placeholder="Search repositories..."
                 className="pl-4 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
-                style={{ minWidth: 220 }}
+                style={{ minWidth: 220, boxShadow: 'none' }}
                 {...getInputProps()}
               />
               <ul
                 {...getMenuProps()}
-                className={`absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto ${isOpen && suggestions.length > 0 ? '' : 'hidden'}`}
+                className={`absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg z-10 max-h-48 overflow-y-auto ${isOpen && suggestions.length > 0 ? '' : 'hidden'}`}
               >
                 {isOpen && suggestions.map((repo, idx) => (
                   <li
@@ -117,8 +117,7 @@ export default function DashBoard() {
                 ))}
               </ul>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              onClick={fetchAllRepos}>
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors bg-white" style={{boxShadow:'none'}} onClick={fetchAllRepos}>
               <RefreshCw className="h-4 w-4" />
               Refresh
             </button>

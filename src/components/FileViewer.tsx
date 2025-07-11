@@ -135,15 +135,15 @@ const FileViewer: React.FC = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <AppHeader />
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-10 animate-fade-in">
+      <main className="flex-1 w-full px-2 sm:px-4 md:px-8 py-6" style={{maxWidth:'100vw'}}>
         <button
-          className="mb-6 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition flex items-center gap-2"
+          className="mb-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition flex items-center gap-2"
           onClick={() => navigate(`/repos/${owner}/${repo}/tree`)}
         >
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Back to Repo Tree
         </button>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-6 border-b border-gray-200 pb-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 border-b border-gray-200 pb-3">
           <div className="flex items-center gap-2 text-lg font-semibold text-black">
             <FileIcon className="h-5 w-5 text-black" />
             <span>{repo}</span>
@@ -154,7 +154,7 @@ const FileViewer: React.FC = () => {
         </div>
         {/* Analyze button for .java files */}
         {isJavaFile && !analyzing && (
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <button
               className="px-4 py-1 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-full shadow hover:from-blue-600 hover:to-indigo-600 transition-all text-xs font-semibold border border-indigo-200 animate-pulse"
               onClick={() => setAnalyzing(true)}
@@ -165,7 +165,7 @@ const FileViewer: React.FC = () => {
         )}
         {/* Scanning animation overlay for .java files */}
         {isJavaFile && analyzing && (
-          <div className="relative mb-4">
+          <div className="relative mb-2">
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md rounded z-10 animate-fade-in" style={{ minHeight: 200 }}>
               <div className="flex flex-col items-center gap-4 w-full">
                 <div className="flex flex-row items-center justify-center mt-4 mb-2">

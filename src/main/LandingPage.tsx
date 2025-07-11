@@ -2,7 +2,7 @@ import { Github, Code, Search, CheckCircle } from "lucide-react";
 import { useEffect, useMemo, type ReactElement } from "react";
 import AOS from 'aos';
 
-function GithubLoginButton({ redirectUrl }: { redirectUrl: string }) {
+function GithubLoginButton({ redirectUrl }: Readonly<{ redirectUrl: string }>) {
     return (
         <div className="flex justify-center">
             <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
@@ -14,7 +14,7 @@ function GithubLoginButton({ redirectUrl }: { redirectUrl: string }) {
     );
 }
 
-function FeatureCard({ icon, title, description }: { icon: ReactElement, title: string, description: string }) {
+function FeatureCard({ icon, title, description }: Readonly<{ icon: ReactElement; title: string; description: string }>) {
     return (
         <div className="text-center">
             <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">

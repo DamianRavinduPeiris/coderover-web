@@ -2,7 +2,6 @@ import axios from "axios";
 import type RepoType from "../types/RepoType";
 import { showError } from './AlertUtil';
 
-// Fetch repositories from the given URL
 export async function fetchRepos(url: string): Promise<RepoType[]> {
   try {
     const response = await axios.get(url, { withCredentials: true });
