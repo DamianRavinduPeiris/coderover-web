@@ -27,7 +27,6 @@ export default function RepoCard({ repo }: { readonly repo: RepoType }) {
             onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    // Simulate click for keyboard
                     handleCardClick({
                         ...e,
                         preventDefault: () => {},

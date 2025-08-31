@@ -1,0 +1,15 @@
+import axios from 'axios';
+import type { ReviewResponse } from '../types/ReviewResponse';
+
+export async function analyzeCode({ code, model }: { code: string; model: string }) {
+  const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:8080';
+  const response = await axios.post(
+    `${baseUrl}/api/v1/review`,
+    { code, model },
+    {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    }
+  );
+  return response.data as ReviewResponse;
+}

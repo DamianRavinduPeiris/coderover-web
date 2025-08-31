@@ -33,7 +33,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, fullTree, owner, repo, level 
 
   const children = node.type === 'tree' && expanded ? getChildren(node, fullTree) : [];
 
-  // Extract icon for expand/collapse
   let expandIcon;
   if (node.type === 'tree') {
     expandIcon = expanded ? <ChevronDownIcon className="mr-1" /> : <ChevronRightIcon className="mr-1" />;

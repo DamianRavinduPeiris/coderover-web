@@ -1,194 +1,204 @@
 import React, { useEffect, useState } from 'react';
+import { decodeBase64, parseReviewText } from '../util/FileUtils';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { analyzeCode } from '../util/Analyzer';
 import { fetchBlob } from '../util/FetchRepoTrees';
 import AppHeader from './AppHeader';
 import AppFooter from './AppFooter';
-import { FileIcon } from 'lucide-react';
+import FileInfo from './FileInfo';
+import AnalyzeButton from './AnalyzeButton';
+import ModelDropdown from './ModelDropdown';
+import ReviewModal from './ReviewModal';
+import Loader from './Loader';
+import { showError } from '../util/AlertUtil';
+import ErrorMessage from './ErrorMessage';
+import EmptyContent from './EmptyContent';
+import FileContent from './FileContent';
+import { detectLanguage } from '../util/DetectLanguage';
 import AOS from 'aos';
-import CodeBlock from './CodeBlock';
+import type { MLModel } from '../types/ModeTypes';
 
-const decodeBase64 = (str: string) => {
-  try {
-    const binary = window.atob(str);
-    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-    return new TextDecoder().decode(bytes);
-  } catch {
-    return atob(str);
-  }
-};
+type ReviewCategory = 'Defects' | 'Performance' | 'Vulnerabilities';
+interface ReviewMessage {
+  category: ReviewCategory;
+  text: string;
+}
 
-const detectLanguage = (fileName?: string): string => {
-  if (!fileName) return 'text';
-  const ext = fileName.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'js': return 'javascript';
-    case 'ts': return 'typescript';
-    case 'tsx': return 'tsx';
-    case 'jsx': return 'jsx';
-    case 'json': return 'json';
-    case 'css': return 'css';
-    case 'html': return 'html';
-    case 'md': return 'markdown';
-    case 'py': return 'python';
-    case 'java': return 'java';
-    case 'c': return 'c';
-    case 'cpp': return 'cpp';
-    case 'cs': return 'csharp';
-    case 'go': return 'go';
-    case 'rb': return 'ruby';
-    case 'php': return 'php';
-    case 'sh': return 'bash';
-    case 'xml': return 'xml';
-    case 'yml':
-    case 'yaml': return 'yaml';
-    default: return 'text';
-  }
-};
+interface FileState {
+  content: string;
+  loading: boolean;
+  error: string | null;
+}
+
+interface AnalysisState {
+  analyzing: boolean;
+  reviewResult: ReviewMessage[] | null;
+  activeTab: ReviewCategory;
+  showModal: boolean;
+}
 
 const FileViewer: React.FC = () => {
   const { owner, repo, '*': sha } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const fileName = location.state?.fileName as string | undefined;
-  const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
 
-  useEffect(() => { AOS.init(); }, []);
+  const [fileState, setFileState] = useState<FileState>({
+    content: '',
+    loading: true,
+    error: null,
+  });
+
+  const [analysis, setAnalysis] = useState<AnalysisState>({
+    analyzing: false,
+    reviewResult: null,
+    activeTab: 'Defects',
+    showModal: false,
+  });
+
+  const [selectedModel, setSelectedModel] = useState<MLModel>({ id: 'gpt-5', name: 'GPT-5' });
+
   useEffect(() => {
-    if (!owner || !repo || !sha) return;
-    setLoading(true);
-    fetchBlob(owner, repo, sha)
-      .then(res => {
+    AOS.init();
+  }, []);
+
+  useEffect(() => {
+    const fetchFileContent = async () => {
+      if (!owner || !repo || !sha) return;
+      setFileState(prev => ({ ...prev, loading: true, error: null }));
+
+      try {
+        const res = await fetchBlob(owner, repo, sha);
         if (res?.data?.content) {
-          setContent(decodeBase64(res.data.content));
+          setFileState({ content: decodeBase64(res.data.content), loading: false, error: null });
         } else {
-          setContent('');
+          setFileState({ content: '', loading: false, error: null });
         }
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to load file');
-        setLoading(false);
-      });
+      } catch {
+        setFileState({ content: '', loading: false, error: 'Failed to load file' });
+      }
+    };
+
+    fetchFileContent();
   }, [owner, repo, sha]);
-  // Detect if the file is a PNG image
+
+  useEffect(() => {
+    if (fileState.error) {
+      showError(fileState.error);
+    }
+  }, [fileState.error]);
+
   const isPng = fileName?.toLowerCase().endsWith('.png');
   const isClassFile = fileName?.toLowerCase().endsWith('.class');
   const isJavaFile = fileName?.toLowerCase().endsWith('.java');
   const language = detectLanguage(fileName);
 
-  if (loading) return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <AppHeader />
-      <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4">
-        <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin mt-20" />
-        <p className="text-gray-600 text-sm">Loading file...</p>
-      </div>
-      <AppFooter />
-    </div>
-  );
-  if (error) return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <AppHeader />
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="text-red-500">{error}</div>
-      </div>
-      <AppFooter />
-    </div>
-  );
-  if (!content) return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <AppHeader />
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="text-gray-500">File content is empty or not available.</div>
-      </div>
-      <AppFooter />
-    </div>
-  );
-  let fileContent: React.ReactNode;
-  if (isClassFile) {
-    fileContent = (
-      <div className="flex flex-col items-center justify-center bg-black border border-gray-200 rounded-lg p-8 animate-fade-in-up">
-        <span className="text-white font-semibold text-lg mb-2">Cannot render .class files</span>
-        <span className="text-white/80 text-sm">Binary .class files cannot be displayed. Please view the source code instead.</span>
-      </div>
-    );
-  } else if (isPng) {
-    fileContent = (
-      <div className="flex justify-center items-center bg-black rounded-lg border border-gray-200 p-6 animate-fade-in-up">
-        <img
-          src={`data:image/png;base64,${content}`}
-          alt={fileName}
-          className="max-w-full max-h-[600px] rounded shadow"
-          style={{ background: '#fff' }}
-        />
+  const handleAnalyze = async () => {
+    setAnalysis({ analyzing: true, reviewResult: null, activeTab: 'Defects', showModal: false });
+
+    try {
+      const data = await analyzeCode({ code: fileState.content, model: selectedModel.id });
+      setAnalysis({
+        analyzing: false,
+        reviewResult: parseReviewText(data.data.choices[0].message.content),
+        activeTab: 'Defects',
+        showModal: true,
+      });
+    } catch {
+      showError("An error occurred while analyzing the code.");
+      setAnalysis(prev => ({ ...prev, analyzing: false }));
+    }
+  };
+
+  const goBackToRepoTree = () => navigate(`/repos/${owner}/${repo}/tree`);
+
+  const handleReviewItemClick = (msg: ReviewMessage) => {
+    const match = msg.text.match(/line\s*(\d+)/i);
+    if (match) {
+      const lineNum = parseInt(match[1], 10);
+      const el = document.getElementById(`code-line-${lineNum}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  if (fileState.loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-white">
+        <AppHeader />
+        <Loader text="Loading file..." />
+        <AppFooter />
       </div>
     );
-  } else if (!isJavaFile || !analyzing) {
-    fileContent = <CodeBlock code={content} language={language} />;
-  } else {
-    fileContent = null;
   }
+
+  if (fileState.error) {
+    return (
+      <div className="flex flex-col min-h-screen bg-white">
+        <AppHeader />
+        <ErrorMessage message={fileState.error} />
+        <AppFooter />
+      </div>
+    );
+  }
+
+  if (!fileState.content) {
+    return (
+      <div className="flex flex-col min-h-screen bg-white">
+        <AppHeader />
+        <EmptyContent message="File content is empty or not available." />
+        <AppFooter />
+      </div>
+    );
+  }
+
+  const fileContent = (
+    <FileContent
+      isClassFile={!!isClassFile}
+      isPng={!!isPng}
+      content={fileState.content}
+      fileName={fileName}
+      language={language}
+    />
+  );
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <AppHeader />
-      <main className="flex-1 w-full px-2 sm:px-4 md:px-8 py-6" style={{maxWidth:'100vw'}}>
+      <main className="flex-1 w-full px-2 sm:px-4 md:px-8 py-6" style={{ maxWidth: '100vw' }}>
         <button
           className="mb-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition flex items-center gap-2"
-          onClick={() => navigate(`/repos/${owner}/${repo}/tree`)}
+          onClick={goBackToRepoTree}
         >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+            <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           Back to Repo Tree
         </button>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 border-b border-gray-200 pb-3">
-          <div className="flex items-center gap-2 text-lg font-semibold text-black">
-            <FileIcon className="h-5 w-5 text-black" />
-            <span>{repo}</span>
-            <span className="text-gray-400">/</span>
-            <span className="text-black font-mono text-base">{fileName ?? 'File'}</span>
-          </div>
-          <div className="text-xs text-black/60 font-mono break-all">SHA: {sha}</div>
-        </div>
-        {/* Analyze button for .java files */}
-        {isJavaFile && !analyzing && (
+        <FileInfo repo={repo!} fileName={fileName} sha={sha as string} />
+        {isJavaFile && (
           <div className="flex items-center gap-2 mb-2">
-            <button
-              className="px-4 py-1 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-full shadow hover:from-blue-600 hover:to-indigo-600 transition-all text-xs font-semibold border border-indigo-200 animate-pulse"
-              onClick={() => setAnalyzing(true)}
-            >
-              Analyze
-            </button>
+            <ModelDropdown
+              selectedModel={selectedModel.id}
+              onChange={id => setSelectedModel({ id, name: id.toUpperCase() })}
+              disabled={analysis.analyzing}
+            />
+            <AnalyzeButton analyzing={analysis.analyzing} onClick={handleAnalyze} />
           </div>
         )}
-        {/* Scanning animation overlay for .java files */}
-        {isJavaFile && analyzing && (
-          <div className="relative mb-2">
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md rounded z-10 animate-fade-in" style={{ minHeight: 200 }}>
-              <div className="flex flex-col items-center gap-4 w-full">
-                <div className="flex flex-row items-center justify-center mt-4 mb-2">
-                  <span className="bounce-dot"></span>
-                  <span className="bounce-dot"></span>
-                  <span className="bounce-dot"></span>
-                </div>
-                <span className="text-gray-700 font-bold text-base tracking-wide animate-pulse">Analyzing file...</span>
-              </div>
-            </div>
-            <div style={{ opacity: 0.3 }}>
-              <CodeBlock code={content} language={language} />
-            </div>
-            {/* End overlay */}
-            {/* Auto-hide animation after 2s */}
-            {analyzing && setTimeout(() => setAnalyzing(false), 2000) && null}
-          </div>
-        )}
-        {/* File content rendering */}
+        <ReviewModal
+          show={Boolean(isJavaFile && analysis.reviewResult && !analysis.analyzing && analysis.showModal)}
+          onClose={() => setAnalysis(prev => ({ ...prev, showModal: false }))}
+          reviewResult={analysis.reviewResult || []}
+          activeTab={analysis.activeTab}
+          setActiveTab={tab => setAnalysis(prev => ({ ...prev, activeTab: tab }))}
+          selectedModelName={selectedModel.name}
+          onReviewItemClick={handleReviewItemClick}
+        />
         {fileContent}
       </main>
       <AppFooter />
     </div>
   );
 };
+
 export default FileViewer;

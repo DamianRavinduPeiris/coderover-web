@@ -17,11 +17,9 @@ export default function RouteConfiguration() {
     );
 }
 
-// Wrapper to extract params for RepoTree
 function RepoTreeWrapper() {
     const { owner, repo } = useParams();
     const location = useLocation();
     if (!owner || !repo) return null;
-    // Pass repoMeta from location.state if available
     return <RepoTree owner={owner} repo={repo} repoMeta={location.state?.repoMeta} />;
 }

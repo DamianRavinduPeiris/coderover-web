@@ -52,7 +52,7 @@ const RepoTree: React.FC<RepoTreeProps> = ({ owner, repo, repoMeta }) => {
     // eslint-disable-next-line
   }, [owner, repo, selectedBranch]);
 
-  // Use repoMeta from location.state if not provided as prop
+
   const meta = repoMeta || location.state?.repoMeta;
 
   useEffect(() => { AOS.init(); }, []);
@@ -71,7 +71,6 @@ const RepoTree: React.FC<RepoTreeProps> = ({ owner, repo, repoMeta }) => {
     </div>
   );
 
-  // Only show top-level nodes
   const topLevelNodes = tree.filter(node => !node.path.includes('/'));
 
   return (
@@ -79,7 +78,7 @@ const RepoTree: React.FC<RepoTreeProps> = ({ owner, repo, repoMeta }) => {
       <AppHeader />
       <main className="flex-1 w-full px-2 sm:px-4 md:px-8 py-6" style={{maxWidth:'100vw'}}>
         <div className="flex flex-col gap-6 w-full">
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-start w-full">
+          <div className="flex flex-col gap-4 w-full lg:flex-row lg:gap-6 items-start">
             <div className="flex-1 min-w-0">
               <div className="flex flex-row gap-2 mb-6 sm:mb-8 flex-wrap">
                 <button
@@ -127,33 +126,33 @@ const RepoTree: React.FC<RepoTreeProps> = ({ owner, repo, repoMeta }) => {
                   />
                 </div>
               </div>
-              <div className="repo-tree bg-white/90 rounded-2xl p-4 space-y-2 border border-gray-200" data-aos="fade-up" data-aos-delay="100">
-                {topLevelNodes.map(node => (
-                  <TreeNode
-                    key={node.sha}
-                    node={node}
-                    fullTree={tree}
-                    owner={owner}
-                    repo={repo}
-                    level={0}
-                  />
-                ))}
+              <div className="flex flex-col gap-4 lg:flex-row lg:gap-6 w-full">
+                <div className="repo-tree bg-white/90 rounded-2xl p-4 space-y-2 border border-gray-200 flex-1" data-aos="fade-up" data-aos-delay="100">
+                  {topLevelNodes.map(node => (
+                    <TreeNode
+                      key={node.sha}
+                      node={node}
+                      fullTree={tree}
+                      owner={owner}
+                      repo={repo}
+                      level={0}
+                    />
+                  ))}
+                </div>
+                {meta && (
+                  <div className="flex flex-col gap-2 bg-white rounded-2xl border border-gray-200 p-4 lg:max-w-xs w-full lg:ml-6" style={{alignSelf:'flex-start'}}>
+                    <span className="font-extrabold text-2xl text-black mb-2">{meta.name}</span>
+                    {meta.description && <span className="text-lg text-black/80 italic max-w-2xl whitespace-pre-line mb-2">{meta.description}</span>}
+                    <div className="flex flex-wrap gap-4 mt-2">
+                      {meta.private && <span className="px-3 py-1 text-sm bg-black text-white rounded-full border border-gray-300 font-semibold">Private</span>}
+                      {meta.language && <span className="flex items-center gap-2 text-black text-base font-medium"><div className="w-4 h-4 bg-black rounded-full"></div>{meta.language}</span>}
+                      <span className="flex items-center gap-2 text-black text-base font-medium"><Star className="h-5 w-5 text-black" />{meta.stargazers_count}</span>
+                      <span className="text-base text-black/60">Updated <span className="font-mono">{meta.updated_at ? new Date(meta.updated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}</span></span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-            {meta && (
-              <aside className="w-full lg:max-w-xs lg:ml-6 mt-4 lg:mt-0 sticky top-32">
-                <div className="flex flex-col gap-2 bg-white rounded-2xl border border-gray-200 p-4">
-                  <span className="font-extrabold text-2xl text-black mb-2">{meta.name}</span>
-                  {meta.description && <span className="text-lg text-black/80 italic max-w-2xl whitespace-pre-line mb-2">{meta.description}</span>}
-                  <div className="flex flex-wrap gap-4 mt-2">
-                    {meta.private && <span className="px-3 py-1 text-sm bg-black text-white rounded-full border border-gray-300 font-semibold">Private</span>}
-                    {meta.language && <span className="flex items-center gap-2 text-black text-base font-medium"><div className="w-4 h-4 bg-black rounded-full"></div>{meta.language}</span>}
-                    <span className="flex items-center gap-2 text-black text-base font-medium"><Star className="h-5 w-5 text-black" />{meta.stargazers_count}</span>
-                    <span className="text-base text-black/60">Updated <span className="font-mono">{meta.updated_at ? new Date(meta.updated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}</span></span>
-                  </div>
-                </div>
-              </aside>
-            )}
           </div>
         </div>
       </main>

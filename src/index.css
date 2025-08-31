@@ -1,3 +1,11 @@
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-loading-bar {
+  animation: loading-bar 1.2s linear infinite;
+  will-change: transform;
+}
 @import "tailwindcss";
 
 html, body {
@@ -64,7 +72,6 @@ body {
   animation: scan-bar-vertical 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
 }
 
-/* Modern glassy scan bar with color accent */
 .glassy-scan-bar {
   background: linear-gradient(180deg, rgba(255,255,255,0.85) 0%, #e0c3fc 40%, #8ec5fc 80%, rgba(255,255,255,0.3) 100%);
   box-shadow: 0 4px 32px 0 rgba(0,0,0,0.10), 0 1.5px 0 0 rgba(180,180,180,0.15);

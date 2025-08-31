@@ -1,4 +1,4 @@
-import { RefreshCw} from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import type RepoType from "../types/RepoType";
 import { useEffect, useState, useCallback } from "react";
 import AOS from 'aos';
@@ -9,7 +9,7 @@ import RepoCard from "./RepoCard";
 import { useCombobox } from 'downshift';
 import AppHeader from "../components/AppHeader";
 import AppFooter from "../components/AppFooter";
-import { fetchUserInfo } from "../util/fetchUserInfo";
+import { fetchUserInfo } from "../util/FetchUserInfo";
 
 export default function DashBoard() {
   useEffect(() => { AOS.init(); }, []);
@@ -31,7 +31,7 @@ export default function DashBoard() {
       const data = await fetchRepos(URL);
       if (!data || data.length === 0) break;
       fetchedRepos = [...fetchedRepos, ...data];
-      if (data.length < pageSize) break; // last page
+      if (data.length < pageSize) break;
       page++;
     }
     setAllRepos(fetchedRepos);
@@ -48,7 +48,6 @@ export default function DashBoard() {
   }, []);
 
   useEffect(() => {
-    // Update repos for current page
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     setRepos(allRepos.slice(start, end));
@@ -117,25 +116,24 @@ export default function DashBoard() {
                 ))}
               </ul>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors bg-white" style={{boxShadow:'none'}} onClick={fetchAllRepos}>
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors bg-white" style={{ boxShadow: 'none' }} onClick={fetchAllRepos}>
               <RefreshCw className="h-4 w-4" />
               Refresh
             </button>
           </div>
         </div>
-        <div className="grid gap-4">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 space-y-4">
-              <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
-              <p className="text-gray-600 text-sm">Fetching repositories...</p>
-            </div>
-          ) : (
-            repos.map((repo) => (
+        {loading ? (
+          <div className="w-full flex flex-col items-center justify-center py-20 space-y-4">
+            <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
+            <p className="text-gray-600 text-sm">Fetching repositories...</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 justify-start">
+            {repos.map((repo) => (
               <RepoCard key={repo.full_name} repo={repo} />
-            ))
-          )}
-        </div>
-        {/* Pagination Controls */}
+            ))}
+          </div>
+        )}
         {!loading && totalPages > 1 && (
           <div className="flex justify-center mt-8">
             <nav className="inline-flex -space-x-px">
