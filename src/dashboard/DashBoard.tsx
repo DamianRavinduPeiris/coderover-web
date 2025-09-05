@@ -9,14 +9,16 @@ import RepoCard from "./RepoCard";
 import { useCombobox } from 'downshift';
 import AppHeader from "../components/AppHeader";
 import AppFooter from "../components/AppFooter";
-import { fetchUserInfo } from "../util/FetchUserInfo";
+import { fetchUserInfo } from "../util/fetchUserInfo";
+import type { UserDTO } from "../types/UserDTO";
+import UserInfo from "./UserInfo";
 
 export default function DashBoard() {
   useEffect(() => { AOS.init(); }, []);
   const [allRepos, setAllRepos] = useState<RepoType[]>([]);
   const [repos, setRepos] = useState<RepoType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<{ name: string; profilePic: string } | null>(null);
+  const [user, setUser] = useState<UserDTO | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const totalPages = Math.ceil(allRepos.length / pageSize);
@@ -43,7 +45,7 @@ export default function DashBoard() {
 
   useEffect(() => {
     fetchUserInfo()
-      .then(({ name, profilePic }) => setUser({ name, profilePic }))
+      .then((user) => setUser(user))
       .catch(() => setUser(null));
   }, []);
 
@@ -87,69 +89,78 @@ export default function DashBoard() {
       <Toaster position="top-right" />
       <AppHeader user={user || undefined} />
       <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold">Your Repositories</h1>
-            <p className="text-gray-600 mt-1">Manage and review your code repositories</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search repositories..."
-                className="pl-4 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
-                style={{ minWidth: 220, boxShadow: 'none' }}
-                {...getInputProps()}
-              />
-              <ul
-                {...getMenuProps()}
-                className={`absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg z-10 max-h-48 overflow-y-auto ${isOpen && suggestions.length > 0 ? '' : 'hidden'}`}
-              >
-                {isOpen && suggestions.map((repo, idx) => (
-                  <li
-                    key={repo.full_name}
-                    {...getItemProps({ item: repo, index: idx })}
-                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${idx === highlightedIndex ? 'bg-gray-100' : ''}`}
+  <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-2xl font-bold">Your Repositories</h1>
+                <p className="text-gray-600 mt-1">Manage and review your code repositories</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search repositories..."
+                    className="pl-4 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
+                    style={{ minWidth: 220, boxShadow: 'none' }}
+                    {...getInputProps()}
+                  />
+                  <ul
+                    {...getMenuProps()}
+                    className={`absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg z-10 max-h-48 overflow-y-auto ${isOpen && suggestions.length > 0 ? '' : 'hidden'}`}
                   >
-                    {repo.name}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors bg-white" style={{ boxShadow: 'none' }} onClick={fetchAllRepos}>
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </button>
-          </div>
-        </div>
-        {loading ? (
-          <div className="w-full flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
-            <p className="text-gray-600 text-sm">Fetching repositories...</p>
-          </div>
-        ) : (
-          <div className="grid gap-4 justify-start">
-            {repos.map((repo) => (
-              <RepoCard key={repo.full_name} repo={repo} />
-            ))}
-          </div>
-        )}
-        {!loading && totalPages > 1 && (
-          <div className="flex justify-center mt-8">
-            <nav className="inline-flex -space-x-px">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1 border border-gray-300 ${currentPage === page ? 'bg-black text-white' : 'bg-white text-black'} rounded mx-1`}
-                  disabled={currentPage === page}
-                >
-                  {page}
+                    {isOpen && suggestions.map((repo, idx) => (
+                      <li
+                        key={repo.full_name}
+                        {...getItemProps({ item: repo, index: idx })}
+                        className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${idx === highlightedIndex ? 'bg-gray-100' : ''}`}
+                      >
+                        {repo.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors bg-white" style={{ boxShadow: 'none' }} onClick={fetchAllRepos}>
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
                 </button>
-              ))}
-            </nav>
+              </div>
+            </div>
+            {loading ? (
+              <div className="w-full flex flex-col items-center justify-center py-20 space-y-4">
+                <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
+                <p className="text-gray-600 text-sm">Fetching repositories...</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 justify-start">
+                {repos.map((repo) => (
+                  <RepoCard key={repo.full_name} repo={repo} />
+                ))}
+              </div>
+            )}
+            {!loading && totalPages > 1 && (
+              <div className="flex justify-center mt-8">
+                <nav className="inline-flex -space-x-px">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 border border-gray-300 ${currentPage === page ? 'bg-black text-white' : 'bg-white text-black'} rounded mx-1`}
+                      disabled={currentPage === page}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            )}
           </div>
-        )}
+          {!loading && user && (
+            <aside className="w-full md:w-80 max-w-xs md:max-w-sm flex-shrink-0 self-start">
+              <UserInfo user={user} />
+            </aside>
+          )}
+        </div>
       </main>
       <AppFooter />
     </div>

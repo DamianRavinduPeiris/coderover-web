@@ -8,8 +8,8 @@ interface ModelDropdownProps {
 
 const models = [
   { id: 'gpt-5', name: 'GPT-5' },
-  { id: 'gpt-4', name: 'GPT-4' },
-  { id: 'gpt-3.5', name: 'GPT-3.5' },
+
+  { id: 'salesforce/CodeT5', name: 'Salesforce/CodeT5' },
 ];
 
 const ModelDropdown: React.FC<ModelDropdownProps> = ({ selectedModel, onChange, disabled }) => (

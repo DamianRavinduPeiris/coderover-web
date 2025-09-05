@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { decodeBase64, parseReviewText } from '../util/FileUtils';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { analyzeCode } from '../util/Analyzer';
+import { analyzeCodeT5 } from '../util/Analyzer';
 import { fetchBlob } from '../util/FetchRepoTrees';
 import AppHeader from './AppHeader';
 import AppFooter from './AppFooter';
@@ -16,7 +17,6 @@ import EmptyContent from './EmptyContent';
 import FileContent from './FileContent';
 import { detectLanguage } from '../util/DetectLanguage';
 import AOS from 'aos';
-import type { MLModel } from '../types/ModeTypes';
 
 type ReviewCategory = 'Defects' | 'Performance' | 'Vulnerabilities';
 interface ReviewMessage {
@@ -56,7 +56,7 @@ const FileViewer: React.FC = () => {
     showModal: false,
   });
 
-  const [selectedModel, setSelectedModel] = useState<MLModel>({ id: 'gpt-5', name: 'GPT-5' });
+  const [selectedModel, setSelectedModel] = useState<{ id: string; name: string }>({ id: 'gpt-5', name: 'GPT-5' });
 
   useEffect(() => {
     AOS.init();
@@ -97,13 +97,23 @@ const FileViewer: React.FC = () => {
     setAnalysis({ analyzing: true, reviewResult: null, activeTab: 'Defects', showModal: false });
 
     try {
-      const data = await analyzeCode({ code: fileState.content, model: selectedModel.id });
-      setAnalysis({
-        analyzing: false,
-        reviewResult: parseReviewText(data.data.choices[0].message.content),
-        activeTab: 'Defects',
-        showModal: true,
-      });
+      if (selectedModel.id === 'salesforce/CodeT5') {
+        const { prediction } = await analyzeCodeT5(fileState.content);
+        setAnalysis({
+          analyzing: false,
+          reviewResult: [{ category: 'Defects', text: prediction }],
+          activeTab: 'Defects',
+          showModal: true,
+        });
+      } else {
+        const data = await analyzeCode({ code: fileState.content, model: selectedModel.id });
+        setAnalysis({
+          analyzing: false,
+          reviewResult: parseReviewText(data.data.choices[0].message.content),
+          activeTab: 'Defects',
+          showModal: true,
+        });
+      }
     } catch {
       showError("An error occurred while analyzing the code.");
       setAnalysis(prev => ({ ...prev, analyzing: false }));
