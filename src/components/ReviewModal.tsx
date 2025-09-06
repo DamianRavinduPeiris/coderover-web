@@ -1,3 +1,4 @@
+import { exportReviewToPDF } from '../util/ExportPDF';
 import React from 'react';
 
 type ReviewCategory = 'Defects' | 'Performance' | 'Vulnerabilities';
@@ -60,7 +61,15 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             </div>
           ))}
         </div>
-        <div className="mt-4 text-xs text-right text-gray-500">Model: <span className="font-bold">{selectedModelName}</span></div>
+        <div className="mt-4 flex justify-between items-center">
+          <button
+            className="px-4 py-2 bg-gray-200 text-black rounded-full text-xs font-semibold mr-2"
+            onClick={() => exportReviewToPDF({ reviewResult, fileName: 'report', modelName: selectedModelName })}
+          >
+            Download Report PDF
+          </button>
+          <span className="text-xs text-right text-gray-500">Model: <span className="font-bold">{selectedModelName}</span></span>
+        </div>
       </div>
     </div>
   );
