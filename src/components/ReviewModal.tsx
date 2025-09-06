@@ -1,4 +1,7 @@
 import { exportReviewToPDF } from '../util/ExportPDF';
+import { sendReportEmail } from '../util/mailer';
+import { showError, showSuccess } from '../util/AlertUtil';
+import { useState } from 'react';
 import React from 'react';
 
 type ReviewCategory = 'Defects' | 'Performance' | 'Vulnerabilities';
@@ -26,6 +29,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   selectedModelName,
   onReviewItemClick,
 }) => {
+  const fileName = typeof window !== 'undefined' && (window as any).location?.state?.fileName ? (window as any).location.state.fileName : 'report';
+  const [emailSending, setEmailSending] = useState(false);
   if (!show) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -62,12 +67,40 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
           ))}
         </div>
         <div className="mt-4 flex justify-between items-center">
-          <button
-            className="px-4 py-2 bg-gray-200 text-black rounded-full text-xs font-semibold mr-2"
-            onClick={() => exportReviewToPDF({ reviewResult, fileName: 'report', modelName: selectedModelName })}
-          >
-            Download Report PDF
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-4 py-2 bg-gray-200 text-black rounded-full text-xs font-semibold"
+              onClick={() => exportReviewToPDF({ reviewResult, fileName: 'report', modelName: selectedModelName })}
+            >
+              Download Report PDF
+            </button>
+            <button
+              className={`px-4 py-2 ${emailSending ? 'bg-gray-300' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-full text-xs font-semibold`}
+              onClick={async () => {
+                if (emailSending) return;
+                setEmailSending(true);
+                const grouped = {
+                  defects: reviewResult.filter(r => r.category === 'Defects').map(r => r.text),
+                  performance: reviewResult.filter(r => r.category === 'Performance').map(r => r.text),
+                  vulnerabilities: reviewResult.filter(r => r.category === 'Vulnerabilities').map(r => r.text),
+                };
+                try {
+                  const res = await sendReportEmail(grouped);
+                  if (res.status === 200) {
+                    showSuccess('Report emailed successfully');
+                  } else {
+                    showError('Failed to send report');
+                  }
+                } catch (e) {
+                  showError('Failed to send report');
+                } finally {
+                  setEmailSending(false);
+                }
+              }}
+            >
+              {emailSending ? 'Sending...' : 'Email Report'}
+            </button>
+          </div>
           <span className="text-xs text-right text-gray-500">Model: <span className="font-bold">{selectedModelName}</span></span>
         </div>
       </div>
