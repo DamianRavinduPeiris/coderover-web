@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { decodeBase64, parseReviewText } from '../util/FileUtils';
+import { decodeBase64, parseReviewTextFromGpt5 } from '../util/FileUtils';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { analyzeCode } from '../util/Analyzer';
 import { analyzeCodeT5 } from '../util/Analyzer';
@@ -109,7 +109,7 @@ const FileViewer: React.FC = () => {
         const data = await analyzeCode({ code: fileState.content, model: selectedModel.id });
         setAnalysis({
           analyzing: false,
-          reviewResult: parseReviewText(data.data.choices[0].message.content),
+          reviewResult: parseReviewTextFromGpt5(data),
           activeTab: 'Defects',
           showModal: true,
         });

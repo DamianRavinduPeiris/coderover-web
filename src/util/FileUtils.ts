@@ -14,7 +14,20 @@ export interface ReviewMessage {
   text: string;
 }
 
-export function parseReviewText(text: string): ReviewMessage[] {
+export function parseReviewTextFromGpt5(response: any): ReviewMessage[] {
+  // expects ReviewResponse type
+  const outputArr = response?.data?.output || [];
+  let text = '';
+  for (const item of outputArr) {
+    if (item.type === 'message' && Array.isArray(item.content)) {
+      for (const content of item.content) {
+        if (content.type === 'output_text' && typeof content.text === 'string') {
+          text += content.text + '\n';
+        }
+      }
+    }
+  }
+  // fallback to old parser for category extraction
   const categories: { [K in ReviewCategory]: string[] } = {
     Defects: [],
     Performance: [],
