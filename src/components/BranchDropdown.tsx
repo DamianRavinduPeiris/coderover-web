@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchRepoBranches } from "../util/FetchRepoBranches";
+import { fetchRepoBranches } from "../util/fetchRepoBranches";
 
 interface BranchDropdownProps {
   owner: string;
