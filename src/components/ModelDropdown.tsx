@@ -7,9 +7,8 @@ interface ModelDropdownProps {
 }
 
 const models = [
-  { id: 'gpt-5', name: 'GPT-5' },
-
-  { id: 'salesforce/CodeT5', name: 'Salesforce/CodeT5' },
+  { id: 'coderover', name: 'CodeRover' },
+  { id: 'gpt-5', name: 'GPT-5' }
 ];
 
 const ModelDropdown: React.FC<ModelDropdownProps> = ({ selectedModel, onChange, disabled }) => (

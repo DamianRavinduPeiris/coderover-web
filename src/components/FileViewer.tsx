@@ -56,7 +56,7 @@ const FileViewer: React.FC = () => {
     showModal: false,
   });
 
-  const [selectedModel, setSelectedModel] = useState<{ id: string; name: string }>({ id: 'gpt-5', name: 'GPT-5' });
+  const [selectedModel, setSelectedModel] = useState<{ id: string; name: string }>({ id: 'coderover', name: 'CodeRover' });
 
   useEffect(() => {
     AOS.init();
@@ -97,7 +97,7 @@ const FileViewer: React.FC = () => {
     setAnalysis({ analyzing: true, reviewResult: null, activeTab: 'Defects', showModal: false });
 
     try {
-      if (selectedModel.id === 'salesforce/CodeT5') {
+      if (selectedModel.id === 'coderover') {
         const { prediction } = await analyzeCodeT5(fileState.content);
         setAnalysis({
           analyzing: false,
